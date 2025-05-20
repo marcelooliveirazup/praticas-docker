@@ -2,12 +2,34 @@ version: "3.8"
 
 services:
   localstack:
-    image: localstack/localstack:3
-    environment:
-      - SERVICES=ecr
-      - DEBUG=1
+    image: localstack/localstack
+    container_name: localstack
     ports:
       - "4566:4566"
+    environment:
+      - SERVICES=s3,ecr
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
       - ./localstack:/var/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - localnet
+
+  app:
+    build:
+      context: ./app
+    container_name: app
+    depends_on:
+      - localstack
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ENDPOINT_URL=http://localstack:4566
+    command: ["python", "main.py"]
+    networks:
+      - localnet
+
+networks:
+  localnet:

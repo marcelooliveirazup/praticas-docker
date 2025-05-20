@@ -1,0 +1,21 @@
+
+{
+  "family": "flask-task",
+  "containerDefinitions": [
+    {
+      "name": "flask-container",
+      "image": "localhost:4566/meu-repo-local:latest",
+      "memory": 512,
+      "cpu": 256,
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "hostPort": 5000
+        }
+      ]
+    }
+  ],
+  "requiresCompatibilities": ["EC2"],
+  "networkMode": "bridge"
+}
