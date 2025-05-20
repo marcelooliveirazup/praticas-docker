@@ -1,0 +1,40 @@
+name: CI/CD com LocalStack
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Instalar Docker Compose
+        run: sudo apt-get install docker-compose -y
+
+      - name: Subir LocalStack com Docker Compose
+        run: docker-compose up -d
+
+      - name: Esperar LocalStack subir
+        run: sleep 20
+
+      - name: Criar repositório no ECR local
+        run: |
+          aws --endpoint-url=http://localhost:4566 ecr create-repository --repository-name meu-repo
+
+      - name: Login no ECR local
+        run: |
+          aws --endpoint-url=http://localhost:4566 ecr get-login-password \
+          | docker login --username AWS --password-stdin localhost:4566
+
+      - name: Build da imagem
+        run: docker build -t minha-imagem .
+
+      - name: Tag da imagem
+        run: docker tag minha-imagem:latest localhost:4566/meu-repo
+
+      - name: Push da imagem
+        run: docker push localhost:4566/meu-repo
